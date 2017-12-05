@@ -5,3 +5,4 @@ extern crate serde_xml_rs;
 
 mod line;
 mod lines;
+mod spectrogram_result;
