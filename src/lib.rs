@@ -8,4 +8,5 @@ mod item;
 mod items;
 mod line;
 mod lines;
+mod rsa_persist_internal;
 mod spectrogram_result;
