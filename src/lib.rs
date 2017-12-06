@@ -3,6 +3,8 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_xml_rs;
 
+mod hex_to_byte;
+
 mod composite;
 mod item;
 mod items;
