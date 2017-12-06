@@ -1,4 +1,7 @@
-use super::line::Line;
+use std::iter::Map;
+use std::slice::Iter;
+
+use super::line::{Line, LineSpectrogram};
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 pub struct Lines {
@@ -14,6 +17,17 @@ where
         Lines {
             lines: lines.into_iter().collect(),
         }
+    }
+}
+
+pub type LinesSpectrogram<'a> = Map<
+    Iter<'a, Line>,
+    fn(&'a Line) -> LineSpectrogram<'a>,
+>;
+
+impl Lines {
+    pub fn data_points<'a>(&'a self) -> LinesSpectrogram<'a> {
+        self.lines.iter().map(Line::data_points)
     }
 }
 
@@ -251,5 +265,64 @@ mod tests {
         let lines: Lines = serde_xml_rs::from_str(input).unwrap();
 
         assert_eq!(lines, expected);
+    }
+
+    #[test]
+    fn data_points() {
+        let lines: Lines = vec![
+            Line {
+                timestamp: 0.0,
+                rsid: 0,
+                units: "dBm".to_string(),
+                x_start: 0,
+                x_range: 0,
+                time_length: 1.0,
+                valid: false,
+                resolution_bandwidth: 0.0,
+                first: false,
+                num_points: 3,
+                mult_recs: false,
+                data: "000000bf0000803e9a9919bf".to_string(),
+            },
+            Line {
+                timestamp: 1.0,
+                rsid: 0,
+                units: "dBm".to_string(),
+                x_start: 0,
+                x_range: 0,
+                time_length: 1.0,
+                valid: false,
+                resolution_bandwidth: 0.0,
+                first: false,
+                num_points: 3,
+                mult_recs: false,
+                data: "000000000000403fcdccccbd".to_string(),
+            },
+            Line {
+                timestamp: 2.0,
+                rsid: 0,
+                units: "dBm".to_string(),
+                x_start: 0,
+                x_range: 0,
+                time_length: 1.0,
+                valid: false,
+                resolution_bandwidth: 0.0,
+                first: false,
+                num_points: 3,
+                mult_recs: false,
+                data: "0000003f0000a03fcdcccc3e".to_string(),
+            },
+        ].into();
+
+        let expected = vec![
+            vec![-0.5, 0.25, -0.6],
+            vec![0.0, 0.75, -0.1],
+            vec![0.5, 1.25, 0.4],
+        ];
+
+        let result: Vec<Vec<f32>> =
+            lines.data_points().map(|points| points.collect()).collect();
+
+        assert_eq!(result, expected);
     }
 }
