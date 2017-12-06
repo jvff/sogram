@@ -24,8 +24,10 @@ pub struct Line {
     pub(crate) data: String,
 }
 
+pub type LineSpectrogram<'a> = BytesToFloats<HexToByte<Chars<'a>>>;
+
 impl Line {
-    pub fn data_points<'a>(&'a self) -> BytesToFloats<HexToByte<Chars<'a>>> {
+    pub fn data_points<'a>(&'a self) -> LineSpectrogram<'a> {
         let chars = self.data.chars();
         let bytes = HexToByte::new(chars);
         let points = BytesToFloats::new(bytes);
