@@ -1,3 +1,8 @@
+use std::str::Chars;
+
+use super::bytes_to_floats::BytesToFloats;
+use super::hex_to_byte::HexToByte;
+
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Line {
@@ -17,6 +22,16 @@ pub struct Line {
     pub(crate) num_points: usize,
     pub(crate) mult_recs: bool,
     pub(crate) data: String,
+}
+
+impl Line {
+    pub fn data_points<'a>(&'a self) -> BytesToFloats<HexToByte<Chars<'a>>> {
+        let chars = self.data.chars();
+        let bytes = HexToByte::new(chars);
+        let points = BytesToFloats::new(bytes);
+
+        points
+    }
 }
 
 #[cfg(test)]
@@ -61,5 +76,28 @@ mod tests {
         let line: Line = serde_xml_rs::from_str(input).unwrap();
 
         assert_eq!(line, expected);
+    }
+
+    #[test]
+    fn points() {
+        let line = Line {
+            timestamp: 0.0,
+            rsid: 0,
+            units: "dBm".to_string(),
+            x_start: 0,
+            x_range: 0,
+            time_length: 0.0,
+            valid: false,
+            resolution_bandwidth: 0.0,
+            first: false,
+            num_points: 4,
+            mult_recs: false,
+            data: "0000803f000080bf0000003f0000c0bf".to_string(),
+        };
+
+        let points: Vec<f32> = line.data_points().collect();
+        let expected = vec![1.0, -1.0, 0.5, -1.5];
+
+        assert_eq!(points, expected);
     }
 }
