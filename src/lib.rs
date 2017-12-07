@@ -8,6 +8,7 @@ mod hex_to_byte;
 
 mod composite;
 mod item;
+mod item_spectrogram;
 mod items;
 mod line;
 mod lines;
