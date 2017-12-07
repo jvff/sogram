@@ -1,4 +1,4 @@
-use super::lines::Lines;
+use super::lines::{Lines, LinesSpectrogram};
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
@@ -21,6 +21,12 @@ pub struct SpectrogramResult {
     #[serde(rename = "CurrentRS")]
     pub(crate) current_rs: usize,
     pub(crate) lines: Lines,
+}
+
+impl SpectrogramResult {
+    pub fn data_points<'a>(&'a self) -> LinesSpectrogram<'a> {
+        self.lines.data_points()
+    }
 }
 
 #[cfg(test)]
@@ -164,5 +170,80 @@ mod tests {
             serde_xml_rs::from_str(input).unwrap();
 
         assert_eq!(spectrogram, expected);
+    }
+
+    #[test]
+    fn data_points() {
+        let spectrogram_result = SpectrogramResult {
+            pid: "ogram".to_string(),
+            name: "Trace".to_string(),
+            time_span_start: -0.011146285714285714,
+            time_span_length: 0.022291428571428573,
+            range_first: 0,
+            range_last: 307,
+            trigger_line: 1,
+            num_lines: 317,
+            ref_timestamp: 63647134869.552425794857142857,
+            earliest_timestamp: 63647134063.50486790214285714,
+            latest_timestamp: 63647134869.54127950914285714,
+            current_rs: 8091,
+            lines: vec![
+                Line {
+                    timestamp: 0.0,
+                    rsid: 0,
+                    units: "dBm".to_string(),
+                    x_start: 0,
+                    x_range: 0,
+                    time_length: 1.0,
+                    valid: false,
+                    resolution_bandwidth: 0.0,
+                    first: false,
+                    num_points: 3,
+                    mult_recs: false,
+                    data: "000000bf0000803e9a9919bf".to_string(),
+                },
+                Line {
+                    timestamp: 1.0,
+                    rsid: 0,
+                    units: "dBm".to_string(),
+                    x_start: 0,
+                    x_range: 0,
+                    time_length: 1.0,
+                    valid: false,
+                    resolution_bandwidth: 0.0,
+                    first: false,
+                    num_points: 3,
+                    mult_recs: false,
+                    data: "000000000000403fcdccccbd".to_string(),
+                },
+                Line {
+                    timestamp: 2.0,
+                    rsid: 0,
+                    units: "dBm".to_string(),
+                    x_start: 0,
+                    x_range: 0,
+                    time_length: 1.0,
+                    valid: false,
+                    resolution_bandwidth: 0.0,
+                    first: false,
+                    num_points: 3,
+                    mult_recs: false,
+                    data: "0000003f0000a03fcdcccc3e".to_string(),
+                },
+            ].into(),
+        };
+
+        let expected = vec![
+            vec![-0.5, 0.25, -0.6],
+            vec![0.0, 0.75, -0.1],
+            vec![0.5, 1.25, 0.4],
+        ];
+
+        let result: Vec<Vec<f32>> = spectrogram_result
+            .data_points()
+            .map(|points| points.collect())
+            .collect();
+
+        assert_eq!(result, expected);
     }
 }
