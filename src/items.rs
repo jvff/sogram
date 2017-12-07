@@ -1,4 +1,8 @@
+use std::iter::FlatMap;
+use std::slice::Iter;
+
 use super::item::Item;
+use super::item_spectrogram::ItemSpectrogram;
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 pub struct Items {
@@ -14,6 +18,18 @@ where
         Items {
             items: items.into_iter().collect(),
         }
+    }
+}
+
+pub type ItemsSpectrogram<'a> = FlatMap<
+    Iter<'a, Item>,
+    ItemSpectrogram<'a>,
+    fn(&'a Item) -> ItemSpectrogram<'a>,
+>;
+
+impl Items {
+    pub fn data_points<'a>(&'a self) -> ItemsSpectrogram<'a> {
+        self.items.iter().flat_map(Item::data_points)
     }
 }
 

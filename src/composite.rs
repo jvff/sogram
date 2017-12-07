@@ -1,4 +1,4 @@
-use super::items::Items;
+use super::items::{Items, ItemsSpectrogram};
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 pub struct Composite {
@@ -6,6 +6,12 @@ pub struct Composite {
     pub(crate) collection: String,
     #[serde(rename = "Items")]
     pub(crate) items: Items,
+}
+
+impl Composite {
+    pub fn data_points<'a>(&'a self) -> ItemsSpectrogram<'a> {
+        self.items.data_points()
+    }
 }
 
 #[cfg(test)]

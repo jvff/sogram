@@ -1,10 +1,24 @@
 use super::composite::Composite;
+use super::item_spectrogram::ItemSpectrogram;
 use super::spectrogram_result::SpectrogramResult;
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 pub enum Item {
     Composite(Composite),
     SpectrogramResult(SpectrogramResult),
+}
+
+impl Item {
+    pub fn data_points<'a>(&'a self) -> ItemSpectrogram<'a> {
+        match *self {
+            Item::Composite(ref composite) => {
+                ItemSpectrogram::Composite(Box::new(composite.data_points()))
+            }
+            Item::SpectrogramResult(ref result) => {
+                ItemSpectrogram::SpectrogramResult(result.data_points())
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -160,5 +174,131 @@ mod tests {
         let item: Item = serde_xml_rs::from_str(input).unwrap();
 
         assert_eq!(item, expected);
+    }
+
+    #[test]
+    fn composite_data_points() {
+        let item = Item::Composite(Composite {
+            pid: "spectrogram_results".to_string(),
+            collection: "t".to_string(),
+            items: vec![
+                Item::SpectrogramResult(
+                    SpectrogramResult {
+                        pid: "ogram".to_string(),
+                        name: "Trace".to_string(),
+                        time_span_start: -0.011146285714285714,
+                        time_span_length: 0.022291428571428573,
+                        range_first: 0,
+                        range_last: 307,
+                        trigger_line: 1,
+                        num_lines: 317,
+                        ref_timestamp: 63647134869.552425794857142857,
+                        earliest_timestamp: 63647134063.50486790214285714,
+                        latest_timestamp: 63647134869.54127950914285714,
+                        current_rs: 8091,
+                        lines: vec![
+                            Line {
+                                timestamp: 0.0,
+                                rsid: 0,
+                                units: "dBm".to_string(),
+                                x_start: 0,
+                                x_range: 0,
+                                time_length: 1.0,
+                                valid: false,
+                                resolution_bandwidth: 0.0,
+                                first: false,
+                                num_points: 3,
+                                mult_recs: false,
+                                data: "000000bf0000803e9a9919bf".to_string(),
+                            },
+                            Line {
+                                timestamp: 1.0,
+                                rsid: 0,
+                                units: "dBm".to_string(),
+                                x_start: 0,
+                                x_range: 0,
+                                time_length: 1.0,
+                                valid: false,
+                                resolution_bandwidth: 0.0,
+                                first: false,
+                                num_points: 3,
+                                mult_recs: false,
+                                data: "000000000000403fcdccccbd".to_string(),
+                            },
+                        ].into(),
+                    }
+                ),
+            ].into(),
+        });
+
+        let result: Vec<Vec<f32>> =
+            item.data_points().map(|points| points.collect()).collect();
+
+        let expected = vec![
+            vec![-0.5, 0.25, -0.6],
+            vec![0.0, 0.75, -0.1],
+        ];
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn spectrogram_result_data_points() {
+        let item = Item::SpectrogramResult(
+            SpectrogramResult {
+                pid: "ogram".to_string(),
+                name: "Trace".to_string(),
+                time_span_start: -0.011146285714285714,
+                time_span_length: 0.022291428571428573,
+                range_first: 0,
+                range_last: 307,
+                trigger_line: 1,
+                num_lines: 317,
+                ref_timestamp: 63647134869.552425794857142857,
+                earliest_timestamp: 63647134063.50486790214285714,
+                latest_timestamp: 63647134869.54127950914285714,
+                current_rs: 8091,
+                lines: vec![
+                    Line {
+                        timestamp: 63647134063.50486790214285714,
+                        rsid: 1341,
+                        units: "dBm".to_string(),
+                        x_start: 119436695,
+                        x_range: 400000,
+                        time_length: 2.4055942855714285,
+                        valid: true,
+                        resolution_bandwidth: 100.00255834564311,
+                        first: true,
+                        num_points: 801,
+                        mult_recs: false,
+                        data: "000000000000403fcdccccbd".to_string(),
+                    },
+                    Line {
+                        timestamp: 63647134066.00499933014285714,
+                        rsid: 1363,
+                        units: "dBm".to_string(),
+                        x_start: 119436695,
+                        x_range: 400000,
+                        time_length: 2.4102674285714287,
+                        valid: true,
+                        resolution_bandwidth: 100.00255834564311,
+                        first: true,
+                        num_points: 801,
+                        mult_recs: false,
+                        data: "0000003f0000a03fcdcccc3e".to_string(),
+                    },
+                ].into(),
+            }
+        );
+
+        let result: Vec<Vec<f32>> =
+            item.data_points().map(|points| points.collect()).collect();
+
+        let expected = vec![
+            vec![0.0, 0.75, -0.1],
+            vec![0.5, 1.25, 0.4],
+        ];
+
+        assert_eq!(result, expected);
     }
 }
