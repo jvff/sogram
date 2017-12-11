@@ -1,9 +1,16 @@
 use super::composite::Composite;
+use super::items::ItemsSpectrogram;
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct RsaPersistInternal {
     pub(crate) composite: Composite,
+}
+
+impl RsaPersistInternal {
+    pub fn data_points<'a>(&'a self) -> ItemsSpectrogram<'a> {
+        self.composite.data_points()
+    }
 }
 
 #[cfg(test)]

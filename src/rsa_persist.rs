@@ -1,3 +1,4 @@
+use super::items::ItemsSpectrogram;
 use super::rsa_persist_internal::RsaPersistInternal;
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
@@ -7,6 +8,12 @@ pub struct RsaPersist {
     version: String,
     application: String,
     internal: RsaPersistInternal,
+}
+
+impl RsaPersist {
+    pub fn data_points<'a>(&'a self) -> ItemsSpectrogram<'a> {
+        self.internal.data_points()
+    }
 }
 
 #[cfg(test)]
