@@ -15,3 +15,5 @@ mod lines;
 mod rsa_persist;
 mod rsa_persist_internal;
 mod spectrogram_result;
+
+pub use rsa_persist::RsaPersist;
